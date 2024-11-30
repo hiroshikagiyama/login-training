@@ -60,7 +60,7 @@ const Login = () => {
         <VStack>
           <Center>
             <Text fontSize="5xl" fontWeight="bold">
-              water-closet-map
+              Login sample app
             </Text>
           </Center>
           <VStack>
