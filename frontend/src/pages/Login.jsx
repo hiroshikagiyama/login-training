@@ -1,12 +1,14 @@
 import { Box, Button, Center, Input, Text, VStack } from '@yamada-ui/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loginMode, setLoginMode] = useState('login');
   const [email, setEmail] = useState('');
+  const [loginMode, setLoginMode] = useState('login');
+  const [isInputError, setIsInputError] = useState(false);
   const navigate = useNavigate();
 
   // ログイン画面 文字数下限値設定
@@ -17,42 +19,25 @@ const Login = () => {
   const handleSignupOrLoginClick = async (e) => {
     const selectUrl = e.target.textContent === '新規登録' ? 'signup' : 'login';
     const loginUser = {
-      username: username,
-      password: password,
-      email: email,
+      username,
+      password,
+      email,
     };
-    // fetch version
-    let response = await fetch(`/api/${selectUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(loginUser),
-      credentials: 'include', // クッキーを含める
-    });
-
-    const data = await response.json();
-    console.log('server response: ', data);
-
-    if (response.ok) {
+    try {
+      let response = await axios.post(`/api/${selectUrl}`, loginUser, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true, // クッキーを含める
+      });
+      console.log('server response: ', response.data);
+      setIsInputError(false);
       navigate('/user_list');
+    } catch (err) {
+      setIsInputError(true);
+      console.log('server response: ', err.message);
     }
   };
-
-  // 認証済みの場合は、map画面へ遷移する
-  useEffect(() => {
-    const checkAuth = async () => {
-      const response = await fetch('/api/auth_check', {
-        credentials: 'include', // セッション情報を送信
-      });
-      const data = await response.json();
-      if (data.authenticated) {
-        navigate('/');
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   return (
     <Center>
@@ -92,6 +77,11 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             ></Input>
+            <Center>
+              <Text color="red.400" fontWeight="bold" height="24px">
+                {isInputError && 'NameまたはPasswordが正しくありません'}
+              </Text>
+            </Center>
             {loginMode === 'signup' ? (
               <Button
                 onClick={handleSignupOrLoginClick}
