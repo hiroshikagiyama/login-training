@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom';
-import { Button } from '@yamada-ui/react';
 import UserList from './pages/UserList.jsx';
 import Notfound from './pages/Notfound.jsx';
 import ProtectedRoute from './auths/ProtectedRoute.jsx';
