@@ -55,7 +55,7 @@ app.use(passport.session());
 // LocalStrategy(ユーザー名・パスワードでの認証)の設定
 passport.use(
   new LocalStrategy(async (username, password, done) => {
-    const user = await find(username);
+    const user = await findUser(username);
     if (user.hashed_password === undefined) {
       // ユーザーが見つからない場合
       return done(null, false);
@@ -74,15 +74,17 @@ passport.use(
 passport.serializeUser((user, done) => done(null, user.username));
 // sessionからuserを取り出して検証するための記述
 passport.deserializeUser(async (username, done) => {
-  const user = find(username);
+  const user = findUser(username);
   done(null, user);
 });
 
-async function find(username) {
+// dbからユーザー情報を検索する関数
+async function findUser(username) {
   const [foundUser] = await db("users").where({ username });
   return foundUser || {};
 }
 
+// 認証状態を確認するミドルウエア
 function checkAuth(req, res, next) {
   if (req.isAuthenticated()) {
     return next(); // 認証済みの場合、次のミドルウェアへ
@@ -116,7 +118,7 @@ async function signup(username, email, password) {
     .insert({
       username,
       email,
-      hashed_password: bcrypt.hashSync(password, 10),
+      hashed_password: bcrypt.hashSync(password, 10), // パスワードをハッシュ化して保存
     })
     .returning("username");
 
@@ -146,11 +148,6 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
-// dbからユーザー情報を検索
-async function findUser(username) {
-  const [foundUser] = await db("users").where({ username });
-  return foundUser || {};
-}
 
 // ログアウトエンドポイント
 app.get("/api/logout", (req, res, next) => {
@@ -175,7 +172,9 @@ app.get("/api/logout", (req, res, next) => {
   });
 });
 
+// 認証状態を確認するためのエンドポイント
 app.get("/api/auth_check", (req, res) => {
+  // isAuthenticated() は認証状態をtrue,falseで返すメソッド
   if (req.isAuthenticated()) {
     res.json({ authenticated: true, user: req.user });
   } else {
@@ -185,19 +184,8 @@ app.get("/api/auth_check", (req, res) => {
 
 ///////////////////////////////////////////////////
 
-//全ユーザーのデータcheckOK
+//全ユーザーのデータ取得
 app.get("/api/users", checkAuth, async (req, res) => {
   const userData = await db.select("*").from("users");
   res.status(200).send(userData);
-});
-
-//idのユーザー情報
-app.get("/api/users/:id", checkAuth, async (req, res) => {
-  const idParams = req.params.id;
-  const userInfo = await db
-    .select("users.*", "favorite.wc_id")
-    .where("users.id", idParams)
-    .from("users")
-    .join("favorite", { "favorite.user_id": "users.id" });
-  res.status(200).send(userInfo);
 });
