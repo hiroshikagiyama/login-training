@@ -1,5 +1,7 @@
+import { Button } from '@yamada-ui/react';
+
 function App() {
-  return <h1>Hello!</h1>;
+  return <Button>Click me!</Button>;
 }
 
 export default App;
