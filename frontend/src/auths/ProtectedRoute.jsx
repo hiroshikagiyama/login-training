@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
@@ -6,11 +7,10 @@ const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   useEffect(() => {
     const checkAuth = async () => {
-      const response = await fetch('/api/auth_check', {
-        credentials: 'include', // セッション情報を送信
+      const response = await axios.get('/api/auth_check', {
+        withCredentials: true, // セッション情報を送信
       });
-      const data = await response.json();
-      setIsAuthenticated(data.authenticated);
+      setIsAuthenticated(response.data.authenticated);
     };
     checkAuth();
   }, []);
