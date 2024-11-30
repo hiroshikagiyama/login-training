@@ -3,9 +3,8 @@
 ```createdb <your databese name>```  
 
 
-- migration,seed実行  
-```npm run migtation```  
-```npm run seed```  
+- migration 
+```npm run migtation```   
 
 
 - package.json（frontend,backend）  
