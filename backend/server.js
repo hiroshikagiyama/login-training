@@ -28,7 +28,6 @@ app.use(
 );
 
 app.use(express.json());
-app.use("/", express.static("../frontend/dist"));
 
 // プロキシ設定 Render環境では必要。session idが保存されないので設定
 app.set("trust proxy", true);
